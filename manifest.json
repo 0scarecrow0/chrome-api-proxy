@@ -12,14 +12,14 @@
   "action": {
     "default_popup": "src/pages/popup/index.html",
     "default_icon": {
-      "32": "icon-32.png"
+      "32": "Logo.png"
     }
   },
   "chrome_url_overrides": {
     "newtab": "src/pages/newtab/index.html"
   },
   "icons": {
-    "128": "icon-128.png"
+    "128": "Logo.png"
   },
   "permissions": ["activeTab"],
   "content_scripts": [
@@ -31,7 +31,7 @@
   "devtools_page": "src/pages/devtools/index.html",
   "web_accessible_resources": [
     {
-      "resources": ["icon-128.png", "icon-32.png"],
+      "resources": ["Logo.png"],
       "matches": []
     }
   ]
