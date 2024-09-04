@@ -15,19 +15,10 @@
       "32": "Logo.png"
     }
   },
-  "chrome_url_overrides": {
-    "newtab": "src/pages/newtab/index.html"
-  },
   "icons": {
     "128": "Logo.png"
   },
   "permissions": ["activeTab"],
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
-      "js": ["src/pages/content/index.tsx"]
-    }
-  ],
   "devtools_page": "src/pages/devtools/index.html",
   "web_accessible_resources": [
     {

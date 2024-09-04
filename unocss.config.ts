@@ -1,3 +1,4 @@
+import presetRemToPx from '@unocss/preset-rem-to-px';
 import { presetWind } from '@unocss/preset-wind';
 import {
   defineConfig,
@@ -9,7 +10,14 @@ import {
 export function createConfig() {
   return defineConfig({
     envMode: 'build',
-    presets: [presetAttributify({ strict: true }), presetUno(), presetWind()],
+    presets: [
+      presetAttributify({ strict: true }),
+      presetUno(),
+      presetWind(),
+      presetRemToPx({
+        baseFontSize: 4,
+      }),
+    ],
     transformers: [transformerDirectives()],
     rules: [
       ['text-center', { 'text-align': 'center' }],

@@ -31,6 +31,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   prettierConfig,

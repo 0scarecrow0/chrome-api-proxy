@@ -13,7 +13,6 @@ const extensionManifest = {
   version: pkg.version,
 } as ManifestV3Export;
 
-// https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
