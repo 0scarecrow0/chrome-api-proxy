@@ -14,6 +14,7 @@
     "uno:build": "unocss \"./src/pages/**/*\" -o ./src/assets/styles/uno.css"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.4.0",
     "ag-grid-community": "^32.1.0",
     "ag-grid-react": "^32.1.0",
     "antd": "^5.20.5",

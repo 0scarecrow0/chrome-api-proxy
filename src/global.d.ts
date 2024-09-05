@@ -9,3 +9,5 @@ declare module '*.json' {
   const content: string;
   export default content;
 }
+
+declare type HAREntry = chrome.devtools.network.HAREntry;

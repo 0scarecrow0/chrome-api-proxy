@@ -1,3 +1,4 @@
+import { getMethodCof } from '@/enum';
 import {
   getNetworkHAR,
   getUuiD,
@@ -5,17 +6,31 @@ import {
   urlValueFormat,
 } from '@/utils';
 import { ColDef } from 'ag-grid-community';
-import { AgGridReact, AgGridReactProps } from 'ag-grid-react';
+import {
+  AgGridReact,
+  AgGridReactProps,
+  CustomCellRendererProps,
+} from 'ag-grid-react';
+import { Tag } from 'antd';
 import { concat, get, map, merge } from 'lodash';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import './index.less';
 
 const AG_GRID_ROW_KEY = '_ag_grid_id';
-const generalAgGridId = (params?: chrome.devtools.network.HAREntry) => {
+
+const generalAgGridId = (params?: HAREntry) => {
   if (!params) return;
   return {
     [AG_GRID_ROW_KEY]: `${getUuiD(10)}_${params?.connection}`,
   };
+};
+
+const Method: FC<CustomCellRendererProps> = (params) => {
+  const methodCof = useMemo(() => {
+    return getMethodCof(params.value);
+  }, [params.value]);
+
+  return <Tag color={methodCof.tagColor}>{methodCof.label}</Tag>;
 };
 
 const InsertNode = () => {
@@ -53,10 +68,24 @@ const InsertNode = () => {
         field: 'request.url',
         headerName: 'Name',
         valueFormatter: urlValueFormat,
-        tooltipField: 'request.url',
+        filter: 'agTextColumnFilter',
       },
-      { field: 'response.status', headerName: 'Status' },
-      { field: '_resourceType', headerName: 'Type' },
+      {
+        field: 'request.method',
+        headerName: 'Method',
+        cellRenderer: Method,
+        filter: 'agTextColumnFilter',
+      },
+      {
+        field: 'response.status',
+        headerName: 'Status',
+        filter: 'agNumberColumnFilter',
+      },
+      {
+        field: '_resourceType',
+        headerName: 'Type',
+        filter: 'agTextColumnFilter',
+      },
       {
         field: 'startedDateTime',
         headerName: 'startedTime',
@@ -75,19 +104,14 @@ const InsertNode = () => {
 
   return (
     <div className="w-100% h-100% flex flex-col overflow-hidden">
-      <div className="shrink-0 h-100 bg-blue">12312313</div>
       <div className="ag-theme-custom flex-1 m-12">
         <AgGridReact
           ref={gridRef}
           columnDefs={colDefs}
-          tooltipShowDelay={0}
-          tooltipHideDelay={1000}
-          tooltipInteraction={true}
           autoSizeStrategy={{ type: 'fitGridWidth' }}
           getRowId={getRowId}
-          onRowClicked={(params) => {
-            console.log(params, 9000000);
-          }}
+          suppressCellFocus={true}
+          enableCellTextSelection={true}
         />
       </div>
     </div>
