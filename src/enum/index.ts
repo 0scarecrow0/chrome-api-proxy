@@ -1,5 +1,8 @@
 import { toUpper } from 'lodash';
 
+/** key stored in proxy rules. */
+export const RULES_STORAGE_KEY = 'rules';
+
 export enum Method {
   GET = 'GET',
   POST = 'POST',
