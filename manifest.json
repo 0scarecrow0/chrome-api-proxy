@@ -2,9 +2,6 @@
   "manifest_version": 3,
   "name": "chrome-api-proxy",
   "description": "chrome extension plugin proxy web requests to a specified address",
-  "options_ui": {
-    "page": "src/pages/options/index.html"
-  },
   "background": {
     "service_worker": "src/pages/background/index.ts",
     "type": "module"

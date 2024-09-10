@@ -1,4 +1,4 @@
-import { BASE_URL_STORAGE_KEY } from '@/enum';
+import { BASE_URL_STORAGE_KEY, YAPI_COOKIE_STORAGE_KEY } from '@/enum';
 import { getLocalStorage, setLocalStorage } from '@/utils';
 import { EditOutlined } from '@ant-design/icons';
 import { useSetState } from 'ahooks';
@@ -6,10 +6,12 @@ import { Avatar, Modal } from 'antd';
 import classNames from 'classnames';
 import { FC, useEffect, useState } from 'react';
 import SetDomain from './SetDomain';
+import './index.less';
 
 interface DomainInfo {
   baseUrl?: string;
   modalOpen?: boolean;
+  cookie?: string;
 }
 
 type YApiInfoProps = {
@@ -21,20 +23,28 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
 
   const [userInfo, setUserInfo] = useState({ avatar: '' });
 
-  const getYApiBaseUrl = async () => {
+  const getStorageInfo = async () => {
     const baseUrl = await getLocalStorage(BASE_URL_STORAGE_KEY);
-    setDomainInfo({ baseUrl });
-  };
-
-  const setYApiBaseUrl = async (url?: string) => {
-    if (!url) return;
-    await setLocalStorage(BASE_URL_STORAGE_KEY, url);
-    getYApiBaseUrl();
+    const cookie = await getLocalStorage(YAPI_COOKIE_STORAGE_KEY);
+    setDomainInfo({ baseUrl, cookie });
   };
 
   useEffect(() => {
-    getYApiBaseUrl();
+    getStorageInfo();
+    chrome.storage.local.onChanged.addListener(getStorageInfo);
+    return () => {
+      chrome.storage.local.onChanged.removeListener(getStorageInfo);
+    };
+  }, []);
 
+  // const res = await request({
+  //   method: 'GET',
+  //   uri: `${this.serverUrl}/api/plugin/export?type=json&pid=${projectId}&status=all&isWiki=false`,
+  //   json: true,
+  //   headers: { Cookie: `_yapi_token=${_yapi_token};_yapi_uid=${_yapi_uid}` }
+  // });
+
+  useEffect(() => {
     setUserInfo({ avatar: '' });
   }, []);
 
@@ -47,7 +57,7 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
         />
         <div className="flex flex-col gap-8 ml-8">
           <div className="flex items-center c-#2c3e50">
-            <div className="w-100 mr-12 text-right font-600">Yapi domain</div>
+            <div className="w-80 mr-12 text-right font-600">Yapi domain</div>
             <div
               className={classNames(
                 'flex items-center cursor-pointer group',
@@ -63,9 +73,14 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
               />
             </div>
           </div>
-
-          <div>456</div>
-          <div>789999</div>
+          {domainInfo.cookie ? (
+            <>
+              <div>456</div>
+              <div>789999</div>
+            </>
+          ) : (
+            <button className="login-btn">Login Yapi</button>
+          )}
         </div>
       </div>
 
@@ -80,8 +95,9 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
         {domainInfo.modalOpen ? (
           <SetDomain
             value={domainInfo.baseUrl}
-            onChange={(baseUrl) => {
-              setYApiBaseUrl(baseUrl);
+            onChange={async (baseUrl) => {
+              if (!baseUrl) return;
+              await setLocalStorage(BASE_URL_STORAGE_KEY, baseUrl);
               setDomainInfo({ modalOpen: false });
             }}
           />
