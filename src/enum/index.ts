@@ -29,3 +29,6 @@ export function getMethodCof(method?: Method | string) {
   const covMethod = toUpper(method) as Method;
   return MethodMap.get(covMethod) || { tagColor: 'lime', label: covMethod };
 }
+
+/** key stored in yapi base url */
+export const BASE_URL_STORAGE_KEY = 'yapi_base_url';
