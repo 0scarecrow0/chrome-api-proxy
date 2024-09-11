@@ -1,11 +1,7 @@
 /* layer: preflights */
 *,::before,::after{--un-rotate:0;--un-rotate-x:0;--un-rotate-y:0;--un-rotate-z:0;--un-scale-x:1;--un-scale-y:1;--un-scale-z:1;--un-skew-x:0;--un-skew-y:0;--un-translate-x:0;--un-translate-y:0;--un-translate-z:0;--un-pan-x: ;--un-pan-y: ;--un-pinch-zoom: ;--un-scroll-snap-strictness:proximity;--un-ordinal: ;--un-slashed-zero: ;--un-numeric-figure: ;--un-numeric-spacing: ;--un-numeric-fraction: ;--un-border-spacing-x:0;--un-border-spacing-y:0;--un-ring-offset-shadow:0 0 rgb(0 0 0 / 0);--un-ring-shadow:0 0 rgb(0 0 0 / 0);--un-shadow-inset: ;--un-shadow:0 0 rgb(0 0 0 / 0);--un-ring-inset: ;--un-ring-offset-width:0px;--un-ring-offset-color:#fff;--un-ring-width:0px;--un-ring-color:rgb(147 197 253 / 0.5);--un-blur: ;--un-brightness: ;--un-contrast: ;--un-drop-shadow: ;--un-grayscale: ;--un-hue-rotate: ;--un-invert: ;--un-saturate: ;--un-sepia: ;--un-backdrop-blur: ;--un-backdrop-brightness: ;--un-backdrop-contrast: ;--un-backdrop-grayscale: ;--un-backdrop-hue-rotate: ;--un-backdrop-invert: ;--un-backdrop-opacity: ;--un-backdrop-saturate: ;--un-backdrop-sepia: ;}::backdrop{--un-rotate:0;--un-rotate-x:0;--un-rotate-y:0;--un-rotate-z:0;--un-scale-x:1;--un-scale-y:1;--un-scale-z:1;--un-skew-x:0;--un-skew-y:0;--un-translate-x:0;--un-translate-y:0;--un-translate-z:0;--un-pan-x: ;--un-pan-y: ;--un-pinch-zoom: ;--un-scroll-snap-strictness:proximity;--un-ordinal: ;--un-slashed-zero: ;--un-numeric-figure: ;--un-numeric-spacing: ;--un-numeric-fraction: ;--un-border-spacing-x:0;--un-border-spacing-y:0;--un-ring-offset-shadow:0 0 rgb(0 0 0 / 0);--un-ring-shadow:0 0 rgb(0 0 0 / 0);--un-shadow-inset: ;--un-shadow:0 0 rgb(0 0 0 / 0);--un-ring-inset: ;--un-ring-offset-width:0px;--un-ring-offset-color:#fff;--un-ring-width:0px;--un-ring-color:rgb(147 197 253 / 0.5);--un-blur: ;--un-brightness: ;--un-contrast: ;--un-drop-shadow: ;--un-grayscale: ;--un-hue-rotate: ;--un-invert: ;--un-saturate: ;--un-sepia: ;--un-backdrop-blur: ;--un-backdrop-brightness: ;--un-backdrop-contrast: ;--un-backdrop-grayscale: ;--un-backdrop-hue-rotate: ;--un-backdrop-invert: ;--un-backdrop-opacity: ;--un-backdrop-saturate: ;--un-backdrop-sepia: ;}
 /* layer: default */
-.absolute{position:absolute;}
-.bottom-0{bottom:0;}
-.left-0{left:0;}
 .line-clamp-1{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;line-clamp:1;}
-.z-50{z-index:50;}
 .m-12{margin:12px;}
 .mb-0{margin-bottom:0;}
 .mb-12{margin-bottom:12px;}
@@ -17,7 +13,6 @@
 .box-border{box-sizing:border-box;}
 .group:hover .group-hover-block{display:block;}
 .hidden{display:none;}
-[size~="\38 8"]{width:88px;height:88px;}
 .h-0{height:0;}
 .h-100\%{height:100%;}
 .w-0{width:0;}
@@ -32,20 +27,18 @@
 .cursor-pointer{cursor:pointer;}
 .items-center{align-items:center;}
 .justify-between{justify-content:space-between;}
+.gap-4{gap:4px;}
 .gap-8{gap:8px;}
 .overflow-hidden{overflow:hidden;}
 .overflow-y-auto{overflow-y:auto;}
 .bg-\#ecf0f1{--un-bg-opacity:1;background-color:rgb(236 240 241 / var(--un-bg-opacity)) /* #ecf0f1 */;}
-.bg-amber-400{--un-bg-opacity:1;background-color:rgb(251 191 36 / var(--un-bg-opacity)) /* #fbbf24 */;}
 .bg-white{--un-bg-opacity:1;background-color:rgb(255 255 255 / var(--un-bg-opacity)) /* #fff */;}
 .p-12{padding:12px;}
 .pb-0{padding-bottom:0;}
-.text-lg{font-size:4.5px;line-height:7px;}
-.text-black{--un-text-opacity:1;color:rgb(0 0 0 / var(--un-text-opacity)) /* #000 */;}
 .c-\#2c3e50{--un-text-opacity:1;color:rgb(44 62 80 / var(--un-text-opacity)) /* #2c3e50 */;}
 .c-\#3498db{--un-text-opacity:1;color:rgb(52 152 219 / var(--un-text-opacity)) /* #3498db */;}
 .c-\#95a5a6{--un-text-opacity:1;color:rgb(149 165 166 / var(--un-text-opacity)) /* #95a5a6 */;}
-.group:hover .group-hover-c-\#2980b9{--un-text-opacity:1;color:rgb(41 128 185 / var(--un-text-opacity)) /* #2980b9 */;}
+.c-\#e74c3c{--un-text-opacity:1;color:rgb(231 76 60 / var(--un-text-opacity)) /* #e74c3c */;}
+.hover-c-\#e67e22:hover{--un-text-opacity:1;color:rgb(230 126 34 / var(--un-text-opacity)) /* #e67e22 */;}
 .font-600{font-weight:600;}
 .text-center{text-align:center;}
-.text-right{text-align:right;}

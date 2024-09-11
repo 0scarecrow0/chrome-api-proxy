@@ -31,6 +31,4 @@ export function getMethodCof(method?: Method | string) {
 }
 
 /** key stored in yapi base url */
-export const BASE_URL_STORAGE_KEY = 'yapi_base_url';
-/** key stored in yapi cookie */
-export const YAPI_COOKIE_STORAGE_KEY = 'yapi_cookie';
+export const YAPI_INFO_STORAGE_KEY = 'yapi_info';

@@ -1,16 +1,17 @@
 import { Button, Form, FormProps, Input } from 'antd';
+import { set } from 'lodash';
 import { FC } from 'react';
 
-type FieldType = {
+export type SetInfoFormValue = {
   url?: string;
 };
 
-interface SetDomainProps {
-  value?: string;
-  onChange?: (url?: string) => void;
+interface SetInfoProps {
+  value?: SetInfoFormValue;
+  onChange?: (url?: SetInfoFormValue) => void;
 }
 
-const SetDomain: FC<SetDomainProps> = ({ value, onChange }) => {
+const SetInfo: FC<SetInfoProps> = ({ value, onChange }) => {
   const getUrlDomain = (url?: string) => {
     try {
       if (!url) return '';
@@ -22,14 +23,21 @@ const SetDomain: FC<SetDomainProps> = ({ value, onChange }) => {
     }
   };
 
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+  const onFinish: FormProps<SetInfoFormValue>['onFinish'] = (values) => {
     const domain = getUrlDomain(values?.url);
-    onChange?.(domain);
+    set(values, 'url', domain);
+    onChange?.(values);
   };
 
   return (
-    <Form initialValues={{ url: value }} onFinish={onFinish}>
-      <Form.Item<FieldType>
+    <Form
+      layout="vertical"
+      requiredMark={false}
+      initialValues={value || {}}
+      onFinish={onFinish}
+    >
+      <Form.Item<SetInfoFormValue>
+        label="Yapi Domain"
         name="url"
         rules={[
           { required: true, message: 'Please input your yapi domain' },
@@ -48,4 +56,4 @@ const SetDomain: FC<SetDomainProps> = ({ value, onChange }) => {
   );
 };
 
-export default SetDomain;
+export default SetInfo;
