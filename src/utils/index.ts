@@ -33,3 +33,22 @@ export function isValidJson(str: string): boolean {
     return false;
   }
 }
+
+export function parseUrl(urlString: string) {
+  try {
+    if (typeof urlString !== 'string' || urlString.trim() === '') return;
+    // 创建 URL 实例解析 URL
+    const url = new URL(urlString);
+    return {
+      protocol: url.protocol, // 协议
+      host: url.host, // 域名+端口
+      hostname: url.hostname, // 域名
+      port: url.port, // 端口
+      pathname: url.pathname, // 路径
+      search: url.search, // 查询参数
+      hash: url.hash, // 锚点
+    };
+  } catch {
+    return;
+  }
+}

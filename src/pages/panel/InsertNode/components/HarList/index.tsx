@@ -1,7 +1,9 @@
 import { getMethodCof } from '@/enum';
+import { useFetch } from '@/request';
 import {
   getNetworkHAR,
   getUuiD,
+  parseUrl,
   timeValueFormat,
   urlValueFormat,
 } from '@/utils';
@@ -11,10 +13,20 @@ import {
   AgGridReactProps,
   CustomCellRendererProps,
 } from 'ag-grid-react';
-import { Tag } from 'antd';
+import { message, Modal, Tag } from 'antd';
 import classNames from 'classnames';
-import { concat, get, map, merge } from 'lodash';
-import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import { concat, drop, get, isArray, join, map, merge, split } from 'lodash';
+import {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { DevToolsContext } from '../../context';
+import SelectModal from './SelectModal';
 
 const AG_GRID_ROW_KEY = '_ag_grid_id';
 
@@ -33,10 +45,73 @@ const Method: FC<CustomCellRendererProps> = (params) => {
   return <Tag color={methodCof.tagColor}>{methodCof.label}</Tag>;
 };
 
+type OperateParams = {
+  dynamicRules?: chrome.declarativeNetRequest.Rule[];
+  selectProxy?: (proxyList?: any[]) => Promise<void>;
+};
+const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
+  const request = useFetch();
+  const { yapiInfo } = useContext(DevToolsContext);
+
+  const _resourceType = get(params.data, '_resourceType');
+  const redirectURL = get(params.data, 'response.redirectURL');
+
+  const addProxy = async () => {
+    const domain = get(yapiInfo, 'url');
+    if (!domain) {
+      message.error('Please set up Yapi Domain first.');
+      return;
+    }
+
+    const requestUrl = get(params.data, 'request.url');
+    const pathname = parseUrl(requestUrl)?.pathname;
+    if (!pathname || pathname === '/') {
+      message.error('Not a valid URL path');
+      return;
+    }
+    /** 因为 yapi 项目中可以设置“接口基本路径”导致，查询不出，所以默认查询时候，减去一层路径 */
+    const pathnameList = split(pathname, '/');
+    const covPathName =
+      pathnameList.length > 2 ? join(drop(pathnameList, 2), '/') : pathname;
+
+    const searchData = await request(
+      'get',
+      `${domain}/api/project/search?q=${covPathName}`,
+    );
+
+    const interfaceList: any[] = get(searchData, 'interface') || [];
+
+    console.log(params.data, 90000000);
+    console.log(pathname, 90000000);
+
+    if (!isArray(interfaceList) || !interfaceList.length) {
+      message.error('未查询到接口');
+      return;
+    }
+    params.selectProxy?.(interfaceList);
+  };
+
+  const addIsShow = useMemo(() => {
+    return _resourceType === 'xhr' && !redirectURL;
+  }, [_resourceType, redirectURL]);
+
+  return (
+    <div className="flex items-center gap-4 text-12">
+      {addIsShow ? (
+        <div
+          className="cursor-pointer c-#e67e22 hover-text-opacity-60"
+          onClick={addProxy}
+        >
+          添加代理
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 type HarListProps = {
   className?: string;
 };
-
 const HarList: FC<HarListProps> = ({ className }) => {
   /** ag-grid Ref */
   const gridRef = useRef<AgGridReact<any>>(null);
@@ -58,13 +133,34 @@ const HarList: FC<HarListProps> = ({ className }) => {
     gridRef.current?.api.setGridOption('rowData', reqList);
   };
 
+  const [dynamicRules, setDynamicRules] = useState<
+    chrome.declarativeNetRequest.Rule[]
+  >([]);
+  /** 获取代理规则 */
+  const getDynamicRules = async () => {
+    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    setDynamicRules(rules);
+  };
+
   useEffect(() => {
     initGetHarList();
+    getDynamicRules();
     chrome.devtools.network.onRequestFinished.addListener(getHarList);
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(getHarList);
     };
   }, []);
+
+  const [selectProxyInfo, setSelectProxyInfo] = useState<{
+    proxyList?: any[];
+    proxyModal?: boolean;
+  }>({});
+  const selectProxy = async (proxyList: any[]) => {
+    setSelectProxyInfo({
+      proxyList,
+      proxyModal: true,
+    });
+  };
 
   const colDefs = useMemo<ColDef[]>(() => {
     return [
@@ -91,12 +187,18 @@ const HarList: FC<HarListProps> = ({ className }) => {
         filter: 'agTextColumnFilter',
       },
       {
-        field: 'startedDateTime',
+        field: 'StartedDateTime',
         headerName: 'startedTime',
         valueFormatter: timeValueFormat,
       },
+      {
+        colId: 'Operate',
+        headerName: 'Operate',
+        cellRendererParams: { dynamicRules, selectProxy },
+        cellRenderer: Operate,
+      },
     ];
-  }, []);
+  }, [dynamicRules, selectProxy]);
 
   const getRowId = useCallback<Required<AgGridReactProps>['getRowId']>(
     ({ data }) => {
@@ -116,6 +218,24 @@ const HarList: FC<HarListProps> = ({ className }) => {
         suppressCellFocus={true}
         enableCellTextSelection={true}
       />
+      <Modal
+        title="Select Proxy"
+        width={400}
+        open={!!selectProxyInfo.proxyModal}
+        onCancel={() => setSelectProxyInfo({ proxyModal: false })}
+        footer={null}
+        destroyOnClose
+      >
+        {selectProxyInfo.proxyModal ? (
+          <SelectModal
+            proxyList={selectProxyInfo.proxyList || []}
+            onOpenChange={(proxyModal, isSubmit) => {
+              if (isSubmit) getDynamicRules();
+              setSelectProxyInfo({ proxyModal });
+            }}
+          />
+        ) : null}
+      </Modal>
     </div>
   );
 };

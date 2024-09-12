@@ -1,17 +1,13 @@
 import { YAPI_INFO_STORAGE_KEY } from '@/enum';
 import { useFetch } from '@/request';
-import { getLocalStorage, setLocalStorage } from '@/utils';
+import { setLocalStorage } from '@/utils';
 import { EditOutlined, LoginOutlined, ReloadOutlined } from '@ant-design/icons';
-import { useSetState } from 'ahooks';
 import { Button, Image, Modal, Tooltip } from 'antd';
 import classNames from 'classnames';
-import { get, isObject } from 'lodash';
-import { FC, useEffect, useMemo, useState } from 'react';
-import SetInfo, { SetInfoFormValue } from './SetInfo';
-
-interface YApiInfo extends SetInfoFormValue {
-  modalOpen?: boolean;
-}
+import { get } from 'lodash';
+import { FC, useContext, useEffect, useMemo, useState } from 'react';
+import { DevToolsContext } from '../../context';
+import SetInfo from './SetInfo';
 
 interface UserInfo {
   /** 添加时间 */
@@ -32,27 +28,11 @@ type YApiInfoProps = {
 
 const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
   const request = useFetch();
+  const { yapiInfo } = useContext(DevToolsContext);
 
-  const [yapiInfo, setYApiInfo] = useSetState<YApiInfo>({});
+  const [yapiInfoModal, setYapiInfoModal] = useState(false);
 
   const [userInfo, setUserInfo] = useState<UserInfo>();
-
-  const getStorageInfo = async () => {
-    const yapiInfo = await getLocalStorage(YAPI_INFO_STORAGE_KEY);
-    if (isObject(yapiInfo)) {
-      setYApiInfo(yapiInfo || {});
-    } else {
-      setYApiInfo({});
-    }
-  };
-
-  useEffect(() => {
-    getStorageInfo();
-    chrome.storage.local.onChanged.addListener(getStorageInfo);
-    return () => {
-      chrome.storage.local.onChanged.removeListener(getStorageInfo);
-    };
-  }, []);
 
   const updateYapiStatus = async () => {
     const domain = get(yapiInfo, 'url');
@@ -103,7 +83,7 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
                 yapiInfo.url ? '' : 'c-#95a5a6',
               )}
               onClick={() => {
-                setYApiInfo({ modalOpen: true });
+                setYapiInfoModal(true);
               }}
             >
               {yapiInfo.url || 'Set Yapi Domain'}
@@ -149,17 +129,17 @@ const YApiInfo: FC<YApiInfoProps> = ({ className }) => {
       <Modal
         title="Set Yapi Domain"
         width={420}
-        open={yapiInfo.modalOpen}
-        onCancel={() => setYApiInfo({ modalOpen: false })}
+        open={yapiInfoModal}
+        onCancel={() => setYapiInfoModal(false)}
         destroyOnClose
         footer={null}
       >
-        {yapiInfo.modalOpen ? (
+        {yapiInfoModal ? (
           <SetInfo
             value={yapiInfo}
             onChange={async (info = {}) => {
               await setLocalStorage(YAPI_INFO_STORAGE_KEY, info);
-              setYApiInfo({ modalOpen: false });
+              setYapiInfoModal(false);
             }}
           />
         ) : null}

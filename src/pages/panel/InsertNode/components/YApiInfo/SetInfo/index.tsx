@@ -1,14 +1,11 @@
 import { Button, Form, FormProps, Input } from 'antd';
 import { set } from 'lodash';
 import { FC } from 'react';
-
-export type SetInfoFormValue = {
-  url?: string;
-};
+import { YapiInfo } from '../../../type';
 
 interface SetInfoProps {
-  value?: SetInfoFormValue;
-  onChange?: (url?: SetInfoFormValue) => void;
+  value?: YapiInfo;
+  onChange?: (url?: YapiInfo) => void;
 }
 
 const SetInfo: FC<SetInfoProps> = ({ value, onChange }) => {
@@ -23,7 +20,7 @@ const SetInfo: FC<SetInfoProps> = ({ value, onChange }) => {
     }
   };
 
-  const onFinish: FormProps<SetInfoFormValue>['onFinish'] = (values) => {
+  const onFinish: FormProps<YapiInfo>['onFinish'] = (values) => {
     const domain = getUrlDomain(values?.url);
     set(values, 'url', domain);
     onChange?.(values);
@@ -36,7 +33,7 @@ const SetInfo: FC<SetInfoProps> = ({ value, onChange }) => {
       initialValues={value || {}}
       onFinish={onFinish}
     >
-      <Form.Item<SetInfoFormValue>
+      <Form.Item<YapiInfo>
         label="Yapi Domain"
         name="url"
         rules={[
