@@ -47,7 +47,7 @@ const Method: FC<CustomCellRendererProps> = (params) => {
 
 type OperateParams = {
   dynamicRules?: chrome.declarativeNetRequest.Rule[];
-  selectProxy?: (proxyList?: any[]) => Promise<void>;
+  selectProxy?: (requestPath: string, proxyList?: any[]) => Promise<void>;
 };
 const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
   const request = useFetch();
@@ -64,7 +64,8 @@ const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
     }
 
     const requestUrl = get(params.data, 'request.url');
-    const pathname = parseUrl(requestUrl)?.pathname;
+    const urlInfo = parseUrl(requestUrl);
+    const pathname = urlInfo?.pathname;
     if (!pathname || pathname === '/') {
       message.error('Not a valid URL path');
       return;
@@ -88,7 +89,7 @@ const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
       message.error('未查询到接口');
       return;
     }
-    params.selectProxy?.(interfaceList);
+    params.selectProxy?.(urlInfo.origin + urlInfo.pathname, interfaceList);
   };
 
   const addIsShow = useMemo(() => {
@@ -154,9 +155,12 @@ const HarList: FC<HarListProps> = ({ className }) => {
   const [selectProxyInfo, setSelectProxyInfo] = useState<{
     proxyList?: any[];
     proxyModal?: boolean;
+    requestPath?: string;
   }>({});
-  const selectProxy = async (proxyList: any[]) => {
+
+  const selectProxy = async (requestPath: string, proxyList: any[]) => {
     setSelectProxyInfo({
+      requestPath,
       proxyList,
       proxyModal: true,
     });
@@ -228,6 +232,7 @@ const HarList: FC<HarListProps> = ({ className }) => {
       >
         {selectProxyInfo.proxyModal ? (
           <SelectModal
+            requestPath={selectProxyInfo.requestPath || ''}
             proxyList={selectProxyInfo.proxyList || []}
             onOpenChange={(proxyModal, isSubmit) => {
               if (isSubmit) getDynamicRules();

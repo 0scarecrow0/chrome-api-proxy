@@ -6,7 +6,7 @@ import { dracula } from '@uiw/codemirror-theme-dracula';
 import CodeMirror from '@uiw/react-codemirror';
 import { Button, message, notification, Tooltip } from 'antd';
 import classNames from 'classnames';
-import { filter, get, map } from 'lodash';
+import { filter, get, map, union } from 'lodash';
 import { FC, useEffect, useMemo, useState } from 'react';
 
 type CodeEditProps = {
@@ -21,18 +21,17 @@ const CodeEdit: FC<CodeEditProps> = ({ className }) => {
 
   const [isEdit, setIsEdit] = useState(false);
 
+  const [rulesKey, setRulesKey] = useState<number[]>([]);
+
   const [codeValue, setCodeValue] = useState(
     JSON.stringify({ rules: [] }, null, 2),
   );
 
   const saveDynamicRules = async () => {
-    const isJson = isValidJson(codeValue);
-    if (!isJson) {
-      throw new Error('The current code is not a valid JSON');
-    }
     const rulesJson = JsonParse(codeValue);
     const addRules = filter(get(rulesJson, 'rules'), 'id');
-    const removeRuleIds = map(addRules, 'id');
+    const addRulesKeys = map(get(rulesJson, 'rules'), 'id');
+    const removeRuleIds = union(rulesKey, addRulesKeys);
     await chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds,
       addRules,
@@ -66,7 +65,14 @@ const CodeEdit: FC<CodeEditProps> = ({ className }) => {
   }, [isEdit]);
 
   const btnClick = async () => {
+    const isJson = isValidJson(codeValue);
+    if (!isJson) {
+      throw new Error('The current code is not a valid JSON');
+    }
     if (!isEdit) {
+      const rulesJson = JsonParse(codeValue);
+      const keys = map(get(rulesJson, 'rules'), 'id');
+      setRulesKey(keys);
       setIsEdit(true);
       return;
     }

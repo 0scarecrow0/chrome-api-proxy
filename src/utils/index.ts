@@ -40,6 +40,7 @@ export function parseUrl(urlString: string) {
     // 创建 URL 实例解析 URL
     const url = new URL(urlString);
     return {
+      origin: url.origin,
       protocol: url.protocol, // 协议
       host: url.host, // 域名+端口
       hostname: url.hostname, // 域名

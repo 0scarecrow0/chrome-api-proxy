@@ -32,3 +32,6 @@ export function getMethodCof(method?: Method | string) {
 
 /** key stored in yapi base url */
 export const YAPI_INFO_STORAGE_KEY = 'yapi_info';
+
+/** key stored in yapi base url */
+export const PROXY_RULE_ID_JOIN_STR = 'yapi_mock';
