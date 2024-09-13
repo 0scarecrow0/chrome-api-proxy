@@ -1,12 +1,6 @@
 import { getMethodCof } from '@/enum';
 import { useFetch } from '@/request';
-import {
-  getNetworkHAR,
-  getUuiD,
-  parseUrl,
-  timeValueFormat,
-  urlValueFormat,
-} from '@/utils';
+import { getNetworkHAR, getUuiD, parseUrl, timeValueFormat } from '@/utils';
 import { ColDef } from 'ag-grid-community';
 import {
   AgGridReact,
@@ -15,7 +9,22 @@ import {
 } from 'ag-grid-react';
 import { message, Modal, Tag } from 'antd';
 import classNames from 'classnames';
-import { concat, drop, get, isArray, join, map, merge, split } from 'lodash';
+import {
+  concat,
+  drop,
+  filter,
+  findIndex,
+  get,
+  isArray,
+  join,
+  map,
+  merge,
+  orderBy,
+  pick,
+  set,
+  split,
+  uniqBy,
+} from 'lodash';
 import {
   FC,
   useCallback,
@@ -30,12 +39,28 @@ import SelectModal from './SelectModal';
 
 const AG_GRID_ROW_KEY = '_ag_grid_id';
 
-const generalAgGridId = (params?: HAREntry) => {
-  if (!params) return;
+type HarType = chrome.devtools.network.HAREntry;
+
+const HarMap = (har: HarType) => {
+  const method = get(har, 'request.method');
+  const status = get(har, 'response.status');
+  const startedTime = get(har, 'startedDateTime');
+  const connection = get(har, 'connection');
+  const _resourceType = get(har, '_resourceType');
+  const urlInfo = parseUrl(get(har, 'request.url'));
+  if (!urlInfo || _resourceType !== 'xhr') return {};
+  const url = urlInfo?.origin + urlInfo?.pathname;
   return {
-    [AG_GRID_ROW_KEY]: `${getUuiD(10)}_${params?.connection}`,
+    url,
+    method,
+    status,
+    startedTime,
+    urlInfo,
+    [AG_GRID_ROW_KEY]: `${getUuiD(10)}_${connection}`,
   };
 };
+
+type ListItemType = ReturnType<typeof HarMap>;
 
 const Method: FC<CustomCellRendererProps> = (params) => {
   const methodCof = useMemo(() => {
@@ -53,7 +78,6 @@ const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
   const request = useFetch();
   const { yapiInfo } = useContext(DevToolsContext);
 
-  const _resourceType = get(params.data, '_resourceType');
   const redirectURL = get(params.data, 'response.redirectURL');
 
   const addProxy = async () => {
@@ -63,13 +87,9 @@ const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
       return;
     }
 
-    const requestUrl = get(params.data, 'request.url');
-    const urlInfo = parseUrl(requestUrl);
-    const pathname = urlInfo?.pathname;
-    if (!pathname || pathname === '/') {
-      message.error('Not a valid URL path');
-      return;
-    }
+    const requestUrl = get(params.data, 'url');
+    const pathname = get(params.data, 'urlInfo.pathname');
+
     /** 因为 yapi 项目中可以设置“接口基本路径”导致，查询不出，所以默认查询时候，减去一层路径 */
     const pathnameList = split(pathname, '/');
     const covPathName =
@@ -81,20 +101,16 @@ const Operate: FC<CustomCellRendererProps & OperateParams> = (params) => {
     );
 
     const interfaceList: any[] = get(searchData, 'interface') || [];
-
-    console.log(params.data, 90000000);
-    console.log(pathname, 90000000);
-
     if (!isArray(interfaceList) || !interfaceList.length) {
       message.error('未查询到接口');
       return;
     }
-    params.selectProxy?.(urlInfo.origin + urlInfo.pathname, interfaceList);
+    params.selectProxy?.(requestUrl, interfaceList);
   };
 
   const addIsShow = useMemo(() => {
-    return _resourceType === 'xhr' && !redirectURL;
-  }, [_resourceType, redirectURL]);
+    return !redirectURL;
+  }, [redirectURL]);
 
   return (
     <div className="flex items-center gap-4 text-12">
@@ -117,21 +133,46 @@ const HarList: FC<HarListProps> = ({ className }) => {
   /** ag-grid Ref */
   const gridRef = useRef<AgGridReact<any>>(null);
 
-  /** 请求成功后 追加一条HAR记录 */
-  const getHarList = async (request?: chrome.devtools.network.Request) => {
+  /**
+   * @description 请求成功后 追加一条HAR记录
+   * @description 1.通过 url 查看列表中是否已存在当前数据
+   * @description 2.如果存在 找到该条数据的ID，与当前数据进行合并，保持ID不变
+   * @description 3.如果不存在则直接追加
+   * @description 4.追加前过滤掉url不存在的数据
+   */
+  const getHarList = async (request?: HarType) => {
     if (!request) return;
-    const currentHar = merge(request, generalAgGridId(request));
-    const rowData = gridRef.current?.api.getGridOption('rowData');
-    const newHarData = concat(rowData, currentHar);
-    gridRef.current?.api.setGridOption('rowData', newHarData);
+    const currentHar = HarMap(request);
+    const rowData = gridRef.current?.api.getGridOption(
+      'rowData',
+    ) as ListItemType[];
+    let mergeList: ListItemType[] = [];
+    const index = findIndex(rowData, { url: currentHar?.url });
+    if (index >= 0) {
+      const rowIdObj = pick(get(rowData, `[${index}]`), AG_GRID_ROW_KEY);
+      const setRow = merge(currentHar, rowIdObj);
+      set(rowData, index, setRow);
+      mergeList = [];
+    } else {
+      mergeList = [currentHar];
+    }
+    const filterData = filter(concat(rowData, mergeList), 'url');
+    gridRef.current?.api.setGridOption('rowData', filterData);
   };
 
-  /** 进入时获取面板 HAR 数据 */
+  /**
+   * @description: 首次进入面板时获取 HAR 数据
+   */
   const initGetHarList = async () => {
     const harLog = await getNetworkHAR();
-    const reqList = map(harLog.entries, (el) => merge(el, generalAgGridId(el)));
-    console.log(reqList, 'reqList');
-    gridRef.current?.api.setGridOption('rowData', reqList);
+    console.log('harLog--->', harLog);
+    const reqList = filter(map(harLog.entries, HarMap), 'url');
+    // 先根据请求时间升序，再去重
+    const newReqList = uniqBy(
+      orderBy(reqList, ['startedTime'], ['desc']),
+      'url',
+    );
+    gridRef.current?.api.setGridOption('rowData', newReqList);
   };
 
   const [dynamicRules, setDynamicRules] = useState<
@@ -169,37 +210,38 @@ const HarList: FC<HarListProps> = ({ className }) => {
   const colDefs = useMemo<ColDef[]>(() => {
     return [
       {
-        field: 'request.url',
+        field: 'urlInfo.pathname',
         headerName: 'Name',
-        valueFormatter: urlValueFormat,
         filter: 'agTextColumnFilter',
+        tooltipField: 'urlInfo.pathname',
+        flex: 1,
       },
       {
-        field: 'request.method',
+        field: 'method',
         headerName: 'Method',
         cellRenderer: Method,
         filter: 'agTextColumnFilter',
+        width: 100,
       },
       {
-        field: 'response.status',
+        field: 'status',
         headerName: 'Status',
         filter: 'agNumberColumnFilter',
+        width: 100,
       },
       {
-        field: '_resourceType',
-        headerName: 'Type',
-        filter: 'agTextColumnFilter',
-      },
-      {
-        field: 'StartedDateTime',
+        field: 'startedTime',
         headerName: 'startedTime',
         valueFormatter: timeValueFormat,
+        width: 100,
+        enableCellChangeFlash: true,
       },
       {
         colId: 'Operate',
         headerName: 'Operate',
         cellRendererParams: { dynamicRules, selectProxy },
         cellRenderer: Operate,
+        width: 100,
       },
     ];
   }, [dynamicRules, selectProxy]);
@@ -221,6 +263,8 @@ const HarList: FC<HarListProps> = ({ className }) => {
         getRowId={getRowId}
         suppressCellFocus={true}
         enableCellTextSelection={true}
+        tooltipShowDelay={0}
+        tooltipShowMode="whenTruncated"
       />
       <Modal
         title="Select Proxy"

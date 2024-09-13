@@ -55,7 +55,7 @@
 	--ag-row-group-indent-size: var(--ag-inherited-row-group-indent-size, calc(var(--ag-cell-widget-spacing) + var(--ag-icon-size)));
 	--ag-value-change-delta-up-color: var(--ag-inherited-value-change-delta-up-color, #43a047);
 	--ag-value-change-delta-down-color: var(--ag-inherited-value-change-delta-down-color, #e53935);
-	--ag-value-change-value-highlight-background-color: var(--ag-inherited-value-change-value-highlight-background-color, #16a08580);
+	--ag-value-change-value-highlight-background-color: var(--ag-inherited-value-change-value-highlight-background-color, rgba(46, 204, 113,80%));
 	--ag-grid-size: var(--ag-inherited-grid-size, 6px);
 	--ag-font-size: var(--ag-inherited-font-size, 12px);
 	--ag-row-height: var(--ag-inherited-row-height, calc(max(var(--ag-icon-size), var(--ag-font-size)) + var(--ag-grid-size) * 3.5 * var(--ag-row-vertical-padding-scale)));
